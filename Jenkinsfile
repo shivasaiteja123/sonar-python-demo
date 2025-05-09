@@ -20,7 +20,7 @@ pipeline {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         bat """
-                            sonar-scanner ^
+                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner \
                             -Dsonar.projectKey=sonar-python-demo ^
                             -Dsonar.sources=. ^
                             -Dsonar.host.url=%SONAR_HOST_URL% ^
