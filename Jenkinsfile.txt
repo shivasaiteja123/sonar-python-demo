@@ -2,44 +2,51 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE = 'SonarQube' // Name of your SonarQube server (configured in Jenkins)
+        // SonarQube server URL
+        SONAR_HOST_URL = 'http://localhost:9000'  // Adjust if your SonarQube server URL is different
+        // SonarQube authentication token (use the token you provided)
+        SONAR_AUTH_TOKEN = 'sqa_4d7f9fc65b0829926f8f4176607a73c4ac467292'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/your-username/sonar-python-demo.git', branch: 'main'
+                // Checkout the code from GitHub
+                checkout scm
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv("${SONARQUBE}") {
-                    sh 'sonar-scanner'
+                script {
+                    // Run SonarQube scanner to analyze the code
+                    withSonarQubeEnv('SonarQube') {
+                        sh ''' 
+                            sonar-scanner \
+                            -Dsonar.projectKey=sonar-python-demo \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                    }
                 }
             }
         }
 
-        stage('Wait for Quality Gate') {
+        stage('Quality Gate') {
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
+                script {
+                    // Wait for the analysis to finish and check the quality gate status
                     waitForQualityGate abortPipeline: true
                 }
-            }
-        }
-
-        stage('Email Notification') {
-            steps {
-                mail to: 'team@example.com',
-                     subject: "SonarQube Analysis Result",
-                     body: "SonarQube analysis is complete. Check results in the dashboard."
             }
         }
     }
 
     post {
         always {
-            cleanWs()
+            // Clean up any resources (optional)
+            echo 'Pipeline finished!'
         }
     }
 }
