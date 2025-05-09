@@ -5,7 +5,7 @@ pipeline {
         // SonarQube server URL
         SONAR_HOST_URL = 'http://localhost:9000'
         // SonarQube authentication token
-        SONAR_AUTH_TOKEN = 'sqa_4d7f9fc65b0829926f8f4176607a73c4ac467292'
+        SONAR_AUTH_TOKEN = 'sqa_48dbb21199f5b1fe8d804acc2aba41b2f46d3a90'
     }
 
     stages {
