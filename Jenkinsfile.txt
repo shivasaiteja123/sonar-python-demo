@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE = 'SonarQube' // Name of your SonarQube server (configured in Jenkins)
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/your-username/sonar-python-demo.git', branch: 'main'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE}") {
+                    sh 'sonar-scanner'
+                }
+            }
+        }
+
+        stage('Wait for Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Email Notification') {
+            steps {
+                mail to: 'team@example.com',
+                     subject: "SonarQube Analysis Result",
+                     body: "SonarQube analysis is complete. Check results in the dashboard."
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
