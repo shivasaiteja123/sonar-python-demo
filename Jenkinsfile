@@ -32,10 +32,10 @@ pipeline {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         bat """
-                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^
-                            -Dsonar.projectKey=sonar-python-demo ^
-                            -Dsonar.sources=. ^
-                            -Dsonar.host.url=%SONAR_HOST_URL% ^
+                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^ 
+                            -Dsonar.projectKey=sonar-python-demo ^ 
+                            -Dsonar.sources=. ^ 
+                            -Dsonar.host.url=%SONAR_HOST_URL% ^ 
                             -Dsonar.login=%SONAR_AUTH_TOKEN%
                         """
                     }
@@ -54,7 +54,14 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished!'
+            echo "Pipeline finished. Sending email notification."
+
+            // Debugging: Output environment variables for troubleshooting
+            echo "Build URL: ${env.BUILD_URL}"
+            echo "Current Build Result: ${currentBuild.currentResult}"
+            echo "Project Name: ${env.JOB_NAME}"
+            echo "Build Number: ${env.BUILD_NUMBER}"
+
             emailext (
                 subject: "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
                 body: """
@@ -66,7 +73,7 @@ pipeline {
                     <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                 """,
                 mimeType: 'text/html',
-                to: 'yerramchattyshivasaiteja2003@gmail.com'  // <-- Replace this with your actual email
+                to: 'yerramchattyshivasaiteja2003@gmail.com'  // <-- Replace with your actual email
             )
         }
     }
