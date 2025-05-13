@@ -54,14 +54,7 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished. Sending email notification."
-
-            // Debugging: Output environment variables for troubleshooting
-            echo "Build URL: ${env.BUILD_URL}"
-            echo "Current Build Result: ${currentBuild.currentResult}"
-            echo "Project Name: ${env.JOB_NAME}"
-            echo "Build Number: ${env.BUILD_NUMBER}"
-
+            echo 'Pipeline finished! Sending email notification...'
             emailext (
                 subject: "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
                 body: """
@@ -73,8 +66,16 @@ pipeline {
                     <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                 """,
                 mimeType: 'text/html',
-                to: 'yerramchattyshivasaiteja2003@gmail.com'  // <-- Replace with your actual email
+                to: 'yerramchattyshivasaiteja2003@gmail.com',  // <-- Replace with your manager's email or your email
+                replyTo: 'no-reply@jenkins.local',  // <-- Add a custom reply-to if necessary
+                from: 'jenkins@yourdomain.com'  // <-- Customize the "From" address as needed
             )
+        }
+        success {
+            echo 'Build successful. Sending success email notification.'
+        }
+        failure {
+            echo 'Build failed. Sending failure email notification.'
         }
     }
 }
