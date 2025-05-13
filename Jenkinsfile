@@ -2,28 +2,24 @@ pipeline {
     agent any
 
     environment {
-        // SonarQube server URL
         SONAR_HOST_URL = 'http://localhost:9000'
-        // Updated SonarQube authentication token
         SONAR_AUTH_TOKEN = 'sqa_1ebae7b0ace5ef257098ede22a1db4a0068c6bad'
-        // GitHub authentication token (using the credential ID 'GithubToken')
-        GITHUB_TOKEN = credentials('GithubToken') // Reference to the GitHub personal access token stored in Jenkins credentials
+        GITHUB_TOKEN = credentials('GithubToken')
     }
 
     stages {
         stage('Checkout') {
             steps {
                 script {
-                    // Checkout the code using GitHub token
                     withCredentials([string(credentialsId: 'GithubToken', variable: 'GITHUB_TOKEN')]) {
                         checkout([
                             $class: 'GitSCM',
-                            branches: [[name: '*/main']], // Or use the branch you want
+                            branches: [[name: '*/main']],
                             doGenerateSubmoduleConfigurations: false,
                             extensions: [],
                             userRemoteConfigs: [[
                                 url: 'https://github.com/shivasaiteja123/sonar-python-demo.git',
-                                credentialsId: 'GithubToken' // Referencing the GitHub token from Jenkins credentials
+                                credentialsId: 'GithubToken'
                             ]]
                         ])
                     }
@@ -34,7 +30,6 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Run the SonarQube scan using the configured SonarQube environment and authentication token
                     withSonarQubeEnv('SonarQube') {
                         bat """
                             C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^
@@ -51,7 +46,6 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    // Wait for the quality gate result and abort if it fails
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -61,6 +55,19 @@ pipeline {
     post {
         always {
             echo 'Pipeline finished!'
+            emailext (
+                subject: "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
+                body: """
+                    <p><b>Jenkins Pipeline Execution Report</b></p>
+                    <p><b>Project:</b> ${env.JOB_NAME}</p>
+                    <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                    <p><b>Status:</b> ${currentBuild.currentResult}</p>
+                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                    <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
+                """,
+                mimeType: 'text/html',
+                to: 'yerramchattyshivasaiteja2003@gmail.com'  // <-- Replace this with your actual email
+            )
         }
     }
 }
