@@ -64,7 +64,7 @@ pipeline {
                     <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                 """,
                 mimeType: 'text/html',
-                to: 'yerramchattyshivasaiteja2003@gmail.com',  // Update as needed
+                to: 'saiteja.y@coresonant.com',  // Update as needed
                 replyTo: 'no-reply@jenkins.local',
                 from: 'notification@aiscipro.com'  // Optional "from" config
             )
