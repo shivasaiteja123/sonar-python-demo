@@ -66,9 +66,9 @@ pipeline {
                     <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                 """,
                 mimeType: 'text/html',
-                to: 'saiteja.y@coresonant.com',  // <-- Replace with your manager's email or your email
+                to: 'yerramchattyshivasaiteja2003@gmail.com',  // <-- Replace with your manager's email or your email
                 replyTo: 'no-reply@jenkins.local',  // <-- Add a custom reply-to if necessary
-                from: 'jenkins@yourdomain.com'  // <-- Customize the "From" address as needed
+                from: 'saiteja.y@coresonant.com'  // <-- Customize the "From" address as needed
             )
         }
         success {
