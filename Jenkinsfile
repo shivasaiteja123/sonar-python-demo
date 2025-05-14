@@ -66,7 +66,7 @@ pipeline {
                 mimeType: 'text/html',
                 to: 'yerramchattyshivasaiteja2003@gmail.com',  // Update as needed
                 replyTo: 'no-reply@jenkins.local',
-                from: 'saiteja.y@coresonant.com'  // Optional "from" config
+                from: 'notification@aiscipro.com'  // Optional "from" config
             )
         }
         success {
