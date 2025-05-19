@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_AUTH_TOKEN = 'sqa_1ebae7b0ace5ef257098ede22a1db4a0068c6bad'
-        GITHUB_TOKEN = credentials('GithubToken') // Ensure this credential exists in Jenkins
+        GITHUB_TOKEN = credentials('GithubToken') 
     }
 
     stages {
