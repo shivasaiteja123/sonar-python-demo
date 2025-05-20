@@ -77,10 +77,10 @@ pipeline {
                     ]
 
                     def jsonPayload = groovy.json.JsonOutput.toJson(payloadMap)
-                    echo "JSON Payload: ${jsonPayload}" // optional debug output
+                    echo "JSON Payload: ${jsonPayload}" // optional debug
 
                     if (isUnix()) {
-                        // Escape single quotes in JSON payload for shell safely
+                        // Escape single quotes in JSON safely for sh
                         def safeJsonPayload = jsonPayload.replace("'", "'\"'\"'")
                         sh """
                             curl -X POST "https://api.postmarkapp.com/email" \\
