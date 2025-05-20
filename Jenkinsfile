@@ -69,30 +69,35 @@ pipeline {
                 def fromEmail = 'saiteja.y@coresonant.com'
 
                 withCredentials([string(credentialsId: 'PostmarkApiKey', variable: 'POSTMARK_API_KEY')]) {
-                    def jsonPayload = """
-                    {
-                        "From": "${fromEmail}",
-                        "To": "${toEmail}",
-                        "Subject": "${subject}",
-                        "HtmlBody": "${body.replaceAll('\n', '').replaceAll('"', '\\"')}"
-                    }
-                    """
+                    def payloadMap = [
+                        From: fromEmail,
+                        To: toEmail,
+                        Subject: subject,
+                        HtmlBody: body
+                    ]
+
+                    def jsonPayload = groovy.json.JsonOutput.toJson(payloadMap)
+                    echo "JSON Payload: ${jsonPayload}" // optional debug output
 
                     if (isUnix()) {
+                        // Escape single quotes in JSON payload for shell safely
+                        def safeJsonPayload = jsonPayload.replace("'", "'\"'\"'")
                         sh """
                             curl -X POST "https://api.postmarkapp.com/email" \\
                             -H "Accept: application/json" \\
                             -H "Content-Type: application/json" \\
                             -H "X-Postmark-Server-Token: ${POSTMARK_API_KEY}" \\
-                            -d '${jsonPayload}'
+                            -d '${safeJsonPayload}'
                         """
                     } else {
+                        // Escape double quotes for Windows bat
+                        def escapedJsonPayload = jsonPayload.replace('"', '\\"')
                         bat """
                             curl -X POST "https://api.postmarkapp.com/email" ^
                             -H "Accept: application/json" ^
                             -H "Content-Type: application/json" ^
                             -H "X-Postmark-Server-Token: ${POSTMARK_API_KEY}" ^
-                            -d "${jsonPayload}"
+                            -d "${escapedJsonPayload}"
                         """
                     }
                 }
