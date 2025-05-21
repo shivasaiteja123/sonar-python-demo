@@ -43,8 +43,10 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                script {
-                    waitForQualityGate abortPipeline: true
+                timeout(time: 5, unit: 'MINUTES') {
+                    script {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
             }
         }
@@ -70,44 +72,44 @@ pipeline {
 
                 withCredentials([string(credentialsId: 'PostmarkApiKey', variable: 'POSTMARK_API_KEY')]) {
                     def payloadMap = [
-                        From: fromEmail,
-                        To: toEmail,
-                        Subject: subject,
+                        From    : fromEmail,
+                        To      : toEmail,
+                        Subject : subject,
                         HtmlBody: body
                     ]
 
                     def jsonPayload = groovy.json.JsonOutput.toJson(payloadMap)
-                    echo "JSON Payload: ${jsonPayload}" // optional debug
+                    echo "JSON Payload: ${jsonPayload}" // For debugging
 
                     if (isUnix()) {
-                        // Escape single quotes in JSON safely for sh
                         def safeJsonPayload = jsonPayload.replace("'", "'\"'\"'")
                         sh """
                             curl -X POST "https://api.postmarkapp.com/email" \\
                             -H "Accept: application/json" \\
                             -H "Content-Type: application/json" \\
                             -H "X-Postmark-Server-Token: ${POSTMARK_API_KEY}" \\
-                            -d '${safeJsonPayload}'
+                            -d '${safeJsonPayload}' || echo "Postmark email failed"
                         """
                     } else {
-                        // Escape double quotes for Windows bat
                         def escapedJsonPayload = jsonPayload.replace('"', '\\"')
                         bat """
                             curl -X POST "https://api.postmarkapp.com/email" ^
                             -H "Accept: application/json" ^
                             -H "Content-Type: application/json" ^
                             -H "X-Postmark-Server-Token: ${POSTMARK_API_KEY}" ^
-                            -d "${escapedJsonPayload}"
+                            -d "${escapedJsonPayload}" || echo Postmark email failed
                         """
                     }
                 }
             }
         }
+
         success {
-            echo 'Build successful. Email sent.'
+            echo '✅ Build successful. Email sent.'
         }
+
         failure {
-            echo 'Build failed. Email sent.'
+            echo '❌ Build failed. Email sent.'
         }
     }
 }
