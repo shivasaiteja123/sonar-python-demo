@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_AUTH_TOKEN = 'sqa_1ebae7b0ace5ef257098ede22a1db4a0068c6bad'
-        GITHUB_TOKEN = credentials('GithubToken') // Your GitHub credential ID
+        // GITHUB_TOKEN will be accessed via withCredentials below
     }
 
     stages {
@@ -55,36 +55,38 @@ pipeline {
             script {
                 echo 'Pipeline finished! Sending email notification via Elastic Email API...'
 
-                def apiKey = credentials('ElasticAPI')  // Your Elastic Email API key
+                withCredentials([string(credentialsId: 'ElasticAPI', variable: 'ELASTIC_API_KEY')]) {
+                    def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
+                    def emailBody = """
+                        <p><b>Jenkins Pipeline Execution Report</b></p>
+                        <p><b>Project:</b> ${env.JOB_NAME}</p>
+                        <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                        <p><b>Status:</b> ${currentBuild.currentResult}</p>
+                        <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                        <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
+                    """
 
-                def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
-                def emailBody = """
-                    <p><b>Jenkins Pipeline Execution Report</b></p>
-                    <p><b>Project:</b> ${env.JOB_NAME}</p>
-                    <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
-                    <p><b>Status:</b> ${currentBuild.currentResult}</p>
-                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                    <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
-                """
+                    def jsonPayload = [
+                        apikey: ELASTIC_API_KEY,
+                        from: "saiteja.y@coresonant.com",      // Must be verified in Elastic Email
+                        fromName: "Jenkins CI",
+                        subject: emailSubject,
+                        to: "yerramchattyshivasaiteja2003@gmail.com",
+                        bodyHtml: emailBody,
+                        isTransactional: true
+                    ]
 
-                def jsonPayload = [
-                    apikey: apiKey,
-                    from: "saiteja.y@coresonant.com",
-                    fromName: "Jenkins CI",
-                    subject: emailSubject,
-                    to: "yerramchattyshivasaiteja2003@gmail.com",
-                    bodyHtml: emailBody,
-                    isTransactional: true
-                ]
+                    def response = httpRequest(
+                        acceptType: 'APPLICATION_JSON',
+                        contentType: 'APPLICATION_JSON',
+                        httpMode: 'POST',
+                        requestBody: groovy.json.JsonOutput.toJson(jsonPayload),
+                        url: 'https://api.elasticemail.com/v2/email/send'
+                    )
 
-                def response = httpRequest acceptType: 'APPLICATION_JSON',
-                    contentType: 'APPLICATION_JSON',
-                    httpMode: 'POST',
-                    requestBody: groovy.json.JsonOutput.toJson(jsonPayload),
-                    url: 'https://api.elasticemail.com/v2/email/send'
-
-                echo "Elastic Email API response status: ${response.status}"
-                echo "Elastic Email API response content: ${response.content}"
+                    echo "Elastic Email API response status: ${response.status}"
+                    echo "Elastic Email API response content: ${response.content}"
+                }
             }
         }
 
