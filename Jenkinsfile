@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_AUTH_TOKEN = 'sqa_1ebae7b0ace5ef257098ede22a1db4a0068c6bad'
-        GITHUB_TOKEN = credentials('GithubToken') // Ensure this credential exists in Jenkins
+        GITHUB_TOKEN = credentials('GithubToken') // Your GitHub credential ID
     }
 
     stages {
@@ -27,7 +27,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarQube') { // Make sure "SonarQube" is configured in Jenkins
+                    withSonarQubeEnv('SonarQube') {
                         bat """
                             C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^
                             -Dsonar.projectKey=sonar-python-demo ^
@@ -55,7 +55,7 @@ pipeline {
             script {
                 echo 'Pipeline finished! Sending email notification via Elastic Email API...'
 
-                def apiKey = credentials('ElasticAPI')  // Make sure this credential exists
+                def apiKey = credentials('ElasticAPI')  // Your Elastic Email API key
 
                 def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
                 def emailBody = """
