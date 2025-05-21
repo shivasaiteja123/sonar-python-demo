@@ -1,5 +1,3 @@
-
-
 pipeline {
     agent any
 
@@ -54,23 +52,42 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished! Sending email notification...'
-            emailext (
-                subject: "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
-                body: """
+            script {
+                echo 'Pipeline finished! Sending email notification via Elastic Email API...'
+
+                def apiKey = credentials('ElasticAPI')  // Make sure this credential exists
+
+                def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
+                def emailBody = """
                     <p><b>Jenkins Pipeline Execution Report</b></p>
                     <p><b>Project:</b> ${env.JOB_NAME}</p>
                     <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
                     <p><b>Status:</b> ${currentBuild.currentResult}</p>
                     <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
                     <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
-                """,
-                mimeType: 'text/html',
-                to: 'saiteja.y@coresonant.com',  // Update as needed
-                replyTo: 'notification@aiscipro.com',
-                from: 'notification@aiscipro.com'  // Optional "from" config
-            )
+                """
+
+                def jsonPayload = [
+                    apikey: apiKey,
+                    from: "saiteja.y@coresonant.com",
+                    fromName: "Jenkins CI",
+                    subject: emailSubject,
+                    to: "yerramchattyshivasaiteja2003@gmail.com",
+                    bodyHtml: emailBody,
+                    isTransactional: true
+                ]
+
+                def response = httpRequest acceptType: 'APPLICATION_JSON',
+                    contentType: 'APPLICATION_JSON',
+                    httpMode: 'POST',
+                    requestBody: groovy.json.JsonOutput.toJson(jsonPayload),
+                    url: 'https://api.elasticemail.com/v2/email/send'
+
+                echo "Elastic Email API response status: ${response.status}"
+                echo "Elastic Email API response content: ${response.content}"
+            }
         }
+
         success {
             echo 'Build successful. Email sent.'
         }
