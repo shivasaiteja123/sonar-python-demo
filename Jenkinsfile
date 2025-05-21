@@ -5,7 +5,7 @@ pipeline {
         SONARQUBE_ENV = credentials('SonarqubeToken') // SonarQube token
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_PROJECT_KEY = 'sonar-python-demo'
-        POSTMARK_API_KEY = credentials('postmark-api-key')
+        POSTMARK_API_KEY = credentials('PostmarkApiKey')
         POSTMARK_FROM = 'saiteja.y@coresonant.com'
         POSTMARK_TO = 'yerramchattyshivasaiteja2003@gmail.com'
     }
