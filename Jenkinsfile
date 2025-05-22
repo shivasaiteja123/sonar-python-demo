@@ -55,14 +55,20 @@ pipeline {
                 echo 'Pipeline finished! Sending email notification via SMTP2GO API...'
 
                 withCredentials([string(credentialsId: 'smtp2go-api-key', variable: 'SMTP2GO_API_KEY')]) {
-                    def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
+                    def status = currentBuild.currentResult
+                    def buildUrl = env.BUILD_URL
+                    def sonarUrl = "http://localhost:9000/dashboard?id=sonar-python-demo"
+
+                    // ✅ Option 1: Concise and Friendly
+                    def emailSubject = "Quality Gate Result: ${status} | Jenkins Build #${env.BUILD_NUMBER}"
                     def emailBody = """
-                        <p><b>Jenkins Pipeline Execution Report</b></p>
-                        <p><b>Project:</b> ${env.JOB_NAME}</p>
-                        <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
-                        <p><b>Status:</b> ${currentBuild.currentResult}</p>
-                        <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                        <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
+                        <p><strong>Code Quality Report</strong></p>
+                        <ul>
+                            <li><strong>Status:</strong> ${status}</li>
+                            <li><strong>Jenkins Build:</strong> <a href="${buildUrl}">#${env.BUILD_NUMBER}</a></li>
+                            <li><strong>SonarQube Report:</strong> <a href="${sonarUrl}">View Analysis</a></li>
+                        </ul>
+                        <p>Thanks for your continued effort toward clean, maintainable code. ✨</p>
                     """
 
                     def payload = [
