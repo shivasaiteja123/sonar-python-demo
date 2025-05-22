@@ -4,7 +4,6 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://localhost:9000'
         SONAR_AUTH_TOKEN = 'sqa_1ebae7b0ace5ef257098ede22a1db4a0068c6bad'
-        // GITHUB_TOKEN will be accessed via withCredentials below
     }
 
     stages {
@@ -29,11 +28,11 @@ pipeline {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         bat """
-                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^
-                            -Dsonar.projectKey=sonar-python-demo ^
-                            -Dsonar.sources=. ^
-                            -Dsonar.host.url=%SONAR_HOST_URL% ^
-                            -Dsonar.login=%SONAR_AUTH_TOKEN% ^
+                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^ 
+                            -Dsonar.projectKey=sonar-python-demo ^ 
+                            -Dsonar.sources=. ^ 
+                            -Dsonar.host.url=%SONAR_HOST_URL% ^ 
+                            -Dsonar.login=%SONAR_AUTH_TOKEN% ^ 
                             -Dsonar.python.version=3.10
                         """
                     }
@@ -66,12 +65,12 @@ pipeline {
                         <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                     """
 
-                    def jsonPayload = [
-                        apikey: ELASTIC_API_KEY,
-                        from: "saiteja.y@coresonant.com",      // Must be verified in Elastic Email
+                    def payload = [
+                        apikey: 141D4B2EFA59AF911FDED1785C569B83014059862F412C08B78D405956235DE396B14CF867D72DFE0C08B72183A9D9F4,
+                        from: "saiteja.y@coresonant.com",  // Replace with your verified sender
                         fromName: "Jenkins CI",
+                        to: "yerramchattyshivasaiteja2003@gmail.com", // Destination
                         subject: emailSubject,
-                        to: "yerramchattyshivasaiteja2003@gmail.com",
                         bodyHtml: emailBody,
                         isTransactional: true
                     ]
@@ -80,7 +79,7 @@ pipeline {
                         acceptType: 'APPLICATION_JSON',
                         contentType: 'APPLICATION_JSON',
                         httpMode: 'POST',
-                        requestBody: groovy.json.JsonOutput.toJson(jsonPayload),
+                        requestBody: groovy.json.JsonOutput.toJson(payload),
                         url: 'https://api.elasticemail.com/v2/email/send'
                     )
 
@@ -88,13 +87,6 @@ pipeline {
                     echo "Elastic Email API response content: ${response.content}"
                 }
             }
-        }
-
-        success {
-            echo 'Build successful. Email sent.'
-        }
-        failure {
-            echo 'Build failed. Email sent.'
         }
     }
 }
