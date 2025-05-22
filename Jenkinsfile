@@ -28,11 +28,11 @@ pipeline {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         bat """
-                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^ 
-                            -Dsonar.projectKey=sonar-python-demo ^ 
-                            -Dsonar.sources=. ^ 
-                            -Dsonar.host.url=%SONAR_HOST_URL% ^ 
-                            -Dsonar.login=%SONAR_AUTH_TOKEN% ^ 
+                            C:\\SonarScanner\\sonar-scanner-7.0.2.4839-windows-x64\\bin\\sonar-scanner ^
+                            -Dsonar.projectKey=sonar-python-demo ^
+                            -Dsonar.sources=. ^
+                            -Dsonar.host.url=%SONAR_HOST_URL% ^
+                            -Dsonar.login=%SONAR_AUTH_TOKEN% ^
                             -Dsonar.python.version=3.10
                         """
                     }
@@ -52,9 +52,9 @@ pipeline {
     post {
         always {
             script {
-                echo 'Pipeline finished! Sending email notification via Elastic Email API...'
+                echo 'Pipeline finished! Sending email notification via SMTP2GO API...'
 
-                withCredentials([string(credentialsId: 'ElasticAPI', variable: 'ELASTIC_API_KEY')]) {
+                withCredentials([string(credentialsId: 'smtp2go-api-key', variable: 'SMTP2GO_API_KEY')]) {
                     def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
                     def emailBody = """
                         <p><b>Jenkins Pipeline Execution Report</b></p>
@@ -66,13 +66,11 @@ pipeline {
                     """
 
                     def payload = [
-                        apikey: ELASTIC_API_KEY,
-                        from: "saiteja.y@coresonant.com",  // Replace with your verified sender
-                        fromName: "Jenkins CI",
-                        to: "yerramchattyshivasaiteja2003@gmail.com", // Destination
+                        api_key: SMTP2GO_API_KEY,
+                        to: ["yerramchattyshivasaiteja2003@gmail.com"],
+                        sender: "saiteja.y@coresonant.com",
                         subject: emailSubject,
-                        bodyHtml: emailBody,
-                        isTransactional: true
+                        html_body: emailBody
                     ]
 
                     def response = httpRequest(
@@ -80,11 +78,11 @@ pipeline {
                         contentType: 'APPLICATION_JSON',
                         httpMode: 'POST',
                         requestBody: groovy.json.JsonOutput.toJson(payload),
-                        url: 'https://api.elasticemail.com/v2/email/send'
+                        url: 'https://api.smtp2go.com/v3/email/send'
                     )
 
-                    echo "Elastic Email API response status: ${response.status}"
-                    echo "Elastic Email API response content: ${response.content}"
+                    echo "SMTP2GO API response status: ${response.status}"
+                    echo "SMTP2GO API response content: ${response.content}"
                 }
             }
         }
