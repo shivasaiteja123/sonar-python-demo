@@ -66,7 +66,7 @@ pipeline {
                     """
 
                     def payload = [
-                        apikey: 141D4B2EFA59AF911FDED1785C569B83014059862F412C08B78D405956235DE396B14CF867D72DFE0C08B72183A9D9F4,
+                        apikey: ELASTIC_API_KEY,
                         from: "saiteja.y@coresonant.com",  // Replace with your verified sender
                         fromName: "Jenkins CI",
                         to: "yerramchattyshivasaiteja2003@gmail.com", // Destination
