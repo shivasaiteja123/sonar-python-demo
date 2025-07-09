@@ -47,27 +47,12 @@ pipeline {
                 }
             }
         }
-
-        stage('Download SonarQube PDF Report') {
-            steps {
-                script {
-                    echo "Downloading SonarQube PDF report..."
-
-                    // Use curl to download PDF report (assuming plugin endpoint is correct)
-                    bat """
-                        curl -u admin:${SONAR_AUTH_TOKEN} ^
-                        "${SONAR_HOST_URL}/plugin/pdfreport/generate?key=sonar-python-demo" ^
-                        -o sonar_report.pdf
-                    """
-                }
-            }
-        }
     }
 
     post {
         always {
             script {
-                echo 'Pipeline finished! Sending email notification with PDF report...'
+                echo 'Pipeline finished! Sending email notification via SMTP2GO API...'
 
                 withCredentials([string(credentialsId: 'smtp2go-api-key', variable: 'SMTP2GO_API_KEY')]) {
                     def emailSubject = "Jenkins Pipeline: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}"
@@ -77,27 +62,15 @@ pipeline {
                         <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
                         <p><b>Status:</b> ${currentBuild.currentResult}</p>
                         <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                        <p><b>SonarQube Report:</b> PDF report is attached.</p>
+                        <p><b>SonarQube Report:</b> <a href="http://192.168.25.10:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                     """
-
-                    // SMTP2GO API payload with attachment base64 encoded
-                    def reportBase64 = ''
-                    if (fileExists('sonar_report.pdf')) {
-                        reportBase64 = new File('sonar_report.pdf').bytes.encodeBase64().toString()
-                    }
 
                     def payload = [
                         api_key: SMTP2GO_API_KEY,
                         to: ["harshit.h@coresonant.com"],
                         sender: "saiteja.y@coresonant.com",
                         subject: emailSubject,
-                        html_body: emailBody,
-                        attachments: [
-                            [
-                                filename: "sonar_report.pdf",
-                                content: reportBase64
-                            ]
-                        ]
+                        html_body: emailBody
                     ]
 
                     def response = httpRequest(
