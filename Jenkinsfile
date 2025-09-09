@@ -62,7 +62,7 @@ pipeline {
                         <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
                         <p><b>Status:</b> ${currentBuild.currentResult}</p>
                         <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                        <p><b>SonarQube Report:</b> <a href="http://192.168.25.10:9000/dashboard?id=sonar-python-demo">View Report</a></p>
+                        <p><b>SonarQube Report:</b> <a href="http://localhost:9000/dashboard?id=sonar-python-demo">View Report</a></p>
                     """
 
                     def payload = [
